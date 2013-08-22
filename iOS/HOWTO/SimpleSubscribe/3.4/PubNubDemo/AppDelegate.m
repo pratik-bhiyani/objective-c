@@ -43,7 +43,41 @@
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    [PubNub disconnect];
+    __block UIAlertView *view = [[UIAlertView alloc] initWithTitle:@"Disconnecting"
+                                                           message:@"Disconnecting"
+                                                          delegate:nil
+                                                 cancelButtonTitle:@"OK"
+                                                 otherButtonTitles:nil];
+    [view show];
+    [PubNub connectWithSuccessBlock:^(NSString *string) {
+
+        PNLog(PNLogGeneralLevel, self, @">>>>>>> CONNECTED");
+
+        view = [[UIAlertView alloc] initWithTitle:@"Connected"
+                                          message:@"Connected"
+                                         delegate:nil
+                                cancelButtonTitle:@"OK"
+                                otherButtonTitles:nil];
+        [view show];
+    }
+                         errorBlock:^(PNError *error) {
+
+                             PNLog(PNLogGeneralLevel, self, @">>>> CONNECTION ERROR");
+
+                             view = [[UIAlertView alloc] initWithTitle:@"Connection error"
+                                                               message:@"Connection error"
+                                                              delegate:nil
+                                                     cancelButtonTitle:@"OK"
+                                                     otherButtonTitles:nil];
+                             [view show];
+                         }];
+    [PubNub requestParticipantsListForChannel:[PNChannel channelWithName:@"a"]
+                          withCompletionBlock:^(NSArray *array, PNChannel *channel, PNError *error) {
+
+                              PNLog(PNLogGeneralLevel, self, @">>>> PRESENCE: %@", array);
+                          }];
+
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
